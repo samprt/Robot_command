@@ -76,7 +76,7 @@ def pd_d(t):
 
 
 def pd_dd(t):
-    return array([[-0.09*sin(0.3 * t)], [-0.16*cos(0.4 * t)], [-0.009 * sin(0.3 * t)]])
+    return array([[-0.09 * sin(0.3 * t)], [-0.16 * cos(0.4 * t)], [-0.009 * sin(0.3 * t)]])
 
 
 def Rd(t):
@@ -84,7 +84,15 @@ def Rd(t):
 
 
 def Rd_d(t):
-    pass
+    w = array([[sin(t)], [cos(2 * t)], [t]])
+    Rd_d = adjoint(w) @ Rd(t)
+    return Rd_d
+
+
+def Rd_dd(t):
+    w = array([[sin(t)], [cos(2 * t)], [t]])
+    Rd_dd = adjoint(w) @ adjoint(w) @ Rd(t)
+    return Rd_dd
 
 
 def back_stepping(vrd_dot, wrd_dot, R, vr, wr):
@@ -110,16 +118,14 @@ def orientateur(Rd, Rd_d, Rd_dd, R, wr):
 
 
 def control(t, p, R, vr, wr):
-    vrd_dot = positionneur(pd, zeros((3, 1)), zeros((3, 1)), p, R, vr, wr)
-    wrd_dot = orientateur(Rd, zeros((3, 3)), zeros((3, 3)), R, wr)
+    vrd_dot = positionneur(pd(t), pd_d(t), pd_dd(t), p, R, vr, wr)
+    wrd_dot = orientateur(Rd(t), Rd_d(t), Rd_dd(t), R, wr)
     f = back_stepping(vrd_dot, wrd_dot, R, vr, wr)
     return f
 
 
 p = array([[10], [0], [-20]])  # x,y,z (front,right,down)
 R = eulermat(0.2, 0.3, 0.4)
-pd = zeros((3, 1))
-Rd = eye(3)
 vr = array([[0], [0], [0]])
 wr = array([[0], [0], [0]])
 α = zeros((N, 1))
@@ -129,7 +135,7 @@ for t in arange(0, 10, dt):
     p, R, vr, wr = clock_hexa(p, R, vr, wr, f)
     clean3D(ax, -20, 20, -20, 20, 0, 25)
     draw_hexarotor3D(ax, p, R, α, ['green', 'black', 'red', 'blue', 'orange', 'brown'])
-    draw_platform(ax, pd, Rd)
+    draw_platform(ax, pd(t), Rd(t))
     α = α + dt * 30 * f
     pause(0.001)
 pause(10)
