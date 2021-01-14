@@ -1,5 +1,7 @@
 from roblib import *  # available at https://www.ensta-bretagne.fr/jaulin/roblib.py
 
+static_platform = True
+
 fig = figure()
 ax = Axes3D(fig)
 m, b, d, l = 10, 2, 1, 1
@@ -57,39 +59,52 @@ def clock_hexa(p, R, vr, wr, f):
     # Calcul des dérivées
     pdot = R @ vr
     vrdot = R.T @ g + 1 / m * fr - adjoint(wr) @ vr
-    wrdot = inv(I) @ (τr - adjoint(wr) @ (I @ wr))
+    wrdot = inv(I) @ (-τr - adjoint(wr) @ (I @ wr))
 
     # Euler
     p = p + dt * pdot
     R = R @ expm(dt * adjoint(wr))
+    R = projSO3(R)
     vr = vr + dt * vrdot
     wr = wr + dt * wrdot
     return p, R, vr, wr
 
 
 def pd(t):
+    if static_platform:
+        return array([[0], [0], [-10]])
     return array([[sin(0.3 * t)], [cos(0.4 * t)], [-10 + 0.1 * sin(0.3 * t)]])
 
 
 def pd_d(t):
-    return array([[0.3*cos(0.3 * t)], [-0.4*sin(0.4 * t)], [0.03 * cos(0.3 * t)]])
+    if static_platform:
+        return zeros((3, 1))
+    return array([[0.3 * cos(0.3 * t)], [-0.4 * sin(0.4 * t)], [0.03 * cos(0.3 * t)]])
 
 
 def pd_dd(t):
+    if static_platform:
+        return zeros((3, 1))
     return array([[-0.09 * sin(0.3 * t)], [-0.16 * cos(0.4 * t)], [-0.009 * sin(0.3 * t)]])
 
 
 def Rd(t):
+    if static_platform:
+        return eye(3)
     return expw([[sin(t)], [cos(2 * t)], [t]])
 
 
 def Rd_d(t):
+    if static_platform:
+        return zeros((3, 3))
     w = array([[sin(t)], [cos(2 * t)], [t]])
     Rd_d = adjoint(w) @ Rd(t)
     return Rd_d
 
 
 def Rd_dd(t):
+    if static_platform:
+        return zeros((3, 3))
     w = array([[sin(t)], [cos(2 * t)], [t]])
     Rd_dd = adjoint(w) @ adjoint(w) @ Rd(t)
     return Rd_dd
