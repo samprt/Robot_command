@@ -1,6 +1,6 @@
 from roblib import *  # available at https://www.ensta-bretagne.fr/jaulin/roblib.py
 
-static_platform = True
+static_platform = False
 
 fig = figure()
 ax = Axes3D(fig)
@@ -97,16 +97,18 @@ def Rd(t):
 def Rd_d(t):
     if static_platform:
         return zeros((3, 3))
-    w = array([[sin(t)], [cos(2 * t)], [t]])
-    Rd_d = adjoint(w) @ Rd(t)
+    Rd_d = (1 / (2 * dt)) * (Rd(t + dt) - Rd(t - dt))
+    # w = array([[sin(t)], [cos(2 * t)], [t]])
+    # Rd_d = adjoint(w) @ Rd(t)
     return Rd_d
 
 
 def Rd_dd(t):
     if static_platform:
         return zeros((3, 3))
-    w = array([[sin(t)], [cos(2 * t)], [t]])
-    Rd_dd = adjoint(w) @ adjoint(w) @ Rd(t)
+    Rd_dd = (1 / (2 * dt)) * (Rd_d(t + dt) - Rd_d(t - dt))
+    # w = array([[sin(t)], [cos(2 * t)], [t]])
+    # Rd_dd = adjoint(w) @ adjoint(w) @ Rd(t)
     return Rd_dd
 
 
