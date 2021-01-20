@@ -59,7 +59,7 @@ def clock_hexa(p, R, vr, wr, f):
     # Calcul des dérivées
     pdot = R @ vr
     vrdot = R.T @ g + 1 / m * fr - adjoint(wr) @ vr
-    wrdot = inv(I) @ (-τr - adjoint(wr) @ (I @ wr))
+    wrdot = inv(I) @ (τr - adjoint(wr) @ (I @ wr))
 
     # Euler
     p = p + dt * pdot
@@ -130,7 +130,7 @@ def orientateur(Rd, Rd_d, Rd_dd, R, wr):
     wd_d = adjoint_inv(Rd_d @ Rd_d.T + Rd_dd @ Rd.T)
     er = R.T @ adjoint_inv(logm(Rd @ R.T))
     er_d = -wr + Rd.T @ wd
-    wrd_dot = (adjoint(wr) @ Rd.T + Rd_d.T) @ wd + Rd.T @ wd_d - 2 * er_d - er
+    wrd_dot = (adjoint(wr) @ Rd.T + Rd_d.T) @ wd + Rd.T @ wd_d + 2 * er_d + er
     return wrd_dot
 
 
