@@ -121,7 +121,7 @@ def tran2H(x, y):
 
 
 def rot2H(a):
-    return array([[cos(a), -sin(a), 0], [sin(a), cos(a), 0], [0, 0, 1]])
+    return array([[cos(a), -sin(a), 0], [sin(a), cos(a), 0], [0, 0, 1]], dtype=object)
 
 
 def clean3D(ax, x1=-10, x2=10, y1=-10, y2=10, z1=-10, z2=10):
@@ -422,7 +422,7 @@ def draw_arrow(x, y, θ, L, col):
     e = 0.2
     M1 = L * array([[0, 1, 1 - e, 1, 1 - e], [0, 0, -e, 0, e]])
     M = np.append(M1, [[1, 1, 1, 1, 1]], axis=0)
-    R = array([[cos(θ), -sin(θ), x], [sin(θ), cos(θ), y], [0, 0, 1]])
+    R = array([[cos(θ), -sin(θ), x], [sin(θ), cos(θ), y], [0, 0, 1]], dtype=object)
     plot2D(R @ M, col)
 
 

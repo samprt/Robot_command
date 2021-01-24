@@ -1,19 +1,20 @@
 from roblib import *  # available at https://www.ensta-bretagne.fr/jaulin/roblib.py
 
 
-def draw(x, u, ax):
+def draw_plane(x, u, ax):
     x, u = x.flatten(), u.flatten()
     plane = array([[0, 0, 6, 0, 0, 0, 0, 1, 6, 0],
                    [0, -1, 0, 1, -1, 0, 0, 0, 0, 0],
                    [0, 0, 0, 0, 0, 0, 1, 0.2, 0, 0],
                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
     e = 0.5
-    flap = array([[-e, 0, 0, -e, -e], [-e, -e, e, e, -e],
-                  [0, 0, 0, 0, 0], [1, 1, 1, 1, 1]])
+    flap = array([[-e, 0, 0, -e, -e],
+                  [-e, -e, e, e, -e],
+                  [0, 0, 0, 0, 0],
+                  [1, 1, 1, 1, 1]])
 
     R = hstack((eulermat(-x[3], -x[4], x[5]),
-                array([[x[0], x[1], -x[2]]]).T
-                ))
+                array([[x[0], x[1], -x[2]]]).T))
     R = vstack((R, array([[0, 0, 0, 1]])))
 
     def draw_flap(ua, s):
@@ -24,7 +25,8 @@ def draw(x, u, ax):
         return
 
     plane = R @ plane
-    clean3D(ax, x[0] - 10, x[0] + 10, x[1] - 10, x[1] + 10, x[2] - 10, x[2] + 10)
+    # clean3D(ax, x[0] - 10, x[0] + 10, x[1] -
+            # 10, x[1] + 10, -x[2] - 10, -x[2] + 10)
     draw_flap(-u[1] + u[2], 1 - e)  # left flap
     draw_flap(-u[1] - u[2], e - 1)  # right flap
     ax.plot(plane[0, :], plane[1, :], plane[2, :], 'blue')  # drone
@@ -40,7 +42,8 @@ def f(x, u):
     α = arctan(x[8] / x[6])
     β = arcsin(x[7] / V)
     φ, θ, ψ = x[3], x[4], x[5]
-    cf, sf, ct, st, tt, ca, sa, cb, sb = cos(φ), sin(φ), cos(θ), sin(θ), tan(θ), cos(α), sin(α), cos(β), sin(β)
+    cf, sf, ct, st, tt, ca, sa, cb, sb = cos(φ), sin(φ), cos(
+        θ), sin(θ), tan(θ), cos(α), sin(α), cos(β), sin(β)
     Fa = 0.002 * (V ** 2) * array([[-ca * cb, ca * sb, sa],
                                    [sb, cb, 0],
                                    [-sa * cb, sa * sb, -ca]]) @ array(
@@ -51,23 +54,45 @@ def f(x, u):
     return vstack((
         eulermat(φ, θ, ψ) @ v,
         eulerderivative(φ, θ, ψ) @ w,
-        9.81 * array([[-st], [ct * sf], [ct * cf]]) + Fa + array([[u[0]], [0], [0]]) - cross(w.T, v.T).T,
+        9.81 * array([[-st], [ct * sf], [ct * cf]]) + Fa +
+        array([[u[0]], [0], [0]]) - cross(w.T, v.T).T,
         array([-w[2] * w[1] + 0.1 * (V ** 2) * (-β - 2 * u[2] + (-5 * w[0] + w[2]) / V),
-               w[2] * w[0] + 0.1 * (V ** 2) * (-0.1 - 2 * α + 0.2 * u[2] - 3 * u[1] - 30 * w[1] / V),
+               w[2] * w[0] + 0.1 * (V ** 2) * (-0.1 - 2 *
+                                               α + 0.2 * u[2] - 3 * u[1] - 30 * w[1] / V),
                0.1 * w[0] * w[1] + 0.1 * (V ** 2) * (β + 0.5 * u[2] + 0.5 * (w[0] - 2 * w[2]) / V)])))
 
 
-x = array([[1, 0, 0, 0, 0.1, 0, 20, 0, 0, 0, 10, 0]]).T  # [x;y;z;φ;θ;ψ;v;w]
-dt = 0.005
-vbar, zbar, rbar = 15, -50, 100
-a = arange(0, 2 * pi + 0.1, 0.1)
-Cx0, Cy0, Cz0 = rbar * np.cos(a), rbar * np.sin(a), [-zbar] * len(a)  # circle to follow
+def control(x, v_bar, θ_bar, ψ_bar):
+    φ, θ, ψ, v = x[3, 0], x[4, 0], x[5, 0], norm(x[6:9])
+    φ_bar = 0.5 * arctan(5*(arctan(tan(0.5 * ψ_bar - ψ))))  # Calcul du gîte désiré pour suivre
+                                                            # pour suivre le bon cap
+    u1 = 5*(1 + 2/pi * arctan((v_bar - v)))  # commande de la poussée
+    u2 = -0.3*(2/pi * arctan(5*(θ_bar - θ)) + abs(sin(φ)))  # commande de l'assiette
+    u3 = -0.3*(2/pi)*arctan(φ_bar - φ) # commande du gîte
+    u = vstack((u1, u2, u3))
+    return u
+
+
+def planner(r_bar, z_bar):
+    ψ_bar = arctan2(x[1, 0], x[0, 0]) + pi/2 - arctan((norm(x[0:2]) - r_bar)/50)
+    θ_bar = -0.2 * arctan((z_bar - x[2, 0])/10)
+    return θ_bar, ψ_bar
+
+
+x = array([[1, 0, 0, 0, 0, 0, 20, 0, 0, 0, 10, 0]]).T  # [x;y;z;φ;θ;ψ;v;w]
+dt = 0.01
+v_bar, z_bar, r_bar = 15, -50, 100
+a = arange(0, 2 * pi, 0.1)
+Cx0, Cy0, Cz0 = r_bar * np.cos(a), r_bar * np.sin(a), [-z_bar] * len(a)  # circle to follow
 
 fig = figure()
 ax = Axes3D(fig)
+clean3D(ax, -100, 100, -100, 100, 0, 70)
 
-for t in arange(0, 0.5, dt):
-    u = array([[10], [0], [0]])
+for t in arange(0, 100, dt):
+    θ_bar, ψ_bar = planner(r_bar/10, z_bar)
+    u = control(x, v_bar, θ_bar, ψ_bar)
     x = x + dt * f(x, u)
-    draw(x, u, ax)
-    pause(0.01)
+    if t%0.1 == 0:
+        draw_plane(x, u, ax)
+pause(10)
