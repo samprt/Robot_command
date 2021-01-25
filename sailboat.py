@@ -36,8 +36,8 @@ def régulateur(m, θ, ψ, a, b, q):
         q = sign(e)
     phi = arctan2(b[1] - a[1], b[0] - a[0])
     theta_bar = phi - arctan(e/r)
-    if cos(ψ - theta_bar) + cos(zeta) < 0 or (norm(e) < r and cos(ψ - phi) + cos(zeta) < 0):
-        theta_bar = pi + ψ - q*zeta
+    if cos(ψ - theta_bar) + cos(zeta) < 0 or (abs(e) < r and cos(ψ - phi) + cos(zeta) < 0):
+        theta_bar = pi + ψ - q * zeta
     δr = (2*δr_max)/pi * arctan(tan((θ - theta_bar)/2))
     δsmax = pi/2 * ((cos(ψ - theta_bar) + 1)/2)**(log(pi/(2*beta))/log(2))
     return array([[δr], [δsmax]]), q

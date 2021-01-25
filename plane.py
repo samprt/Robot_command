@@ -26,7 +26,7 @@ def draw_plane(x, u, ax):
 
     plane = R @ plane
     # clean3D(ax, x[0] - 10, x[0] + 10, x[1] -
-            # 10, x[1] + 10, -x[2] - 10, -x[2] + 10)
+    #        10, x[1] + 10, -x[2] - 10, -x[2] + 10)
     draw_flap(-u[1] + u[2], 1 - e)  # left flap
     draw_flap(-u[1] - u[2], e - 1)  # right flap
     ax.plot(plane[0, :], plane[1, :], plane[2, :], 'blue')  # drone
@@ -64,24 +64,24 @@ def f(x, u):
 
 def control(x, v_bar, θ_bar, ψ_bar):
     φ, θ, ψ, v = x[3, 0], x[4, 0], x[5, 0], norm(x[6:9])
-    φ_bar = 0.5 * arctan(5*(arctan(tan(0.5 * ψ_bar - ψ))))  # Calcul du gîte désiré pour suivre
-                                                            # pour suivre le bon cap
-    u1 = 5*(1 + 2/pi * arctan((v_bar - v)))  # commande de la poussée
-    u2 = -0.3*(2/pi * arctan(5*(θ_bar - θ)) + abs(sin(φ)))  # commande de l'assiette
-    u3 = -0.3*(2/pi)*arctan(φ_bar - φ) # commande du gîte
+    φ_bar = 0.8 * arctan(5 * (arctan(0.5 * tan(ψ_bar - ψ))))  # Calcul du gîte désiré pour suivre
+    # pour suivre le bon cap
+    u1 = 5 * (1 + 2 / pi * arctan((v_bar - v)))  # commande de la poussée
+    u2 = -0.3 * (2 / pi * arctan(5 * (θ_bar - θ)) + abs(sin(φ)))  # commande de l'assiette
+    u3 = -0.4 * (2 / pi) * arctan(φ_bar - φ)  # commande du gîte
     u = vstack((u1, u2, u3))
     return u
 
 
 def planner(r_bar, z_bar):
-    ψ_bar = arctan2(x[1, 0], x[0, 0]) + pi/2 - arctan((norm(x[0:2]) - r_bar)/50)
-    θ_bar = -0.2 * arctan((z_bar - x[2, 0])/10)
+    ψ_bar = arctan2(x[1, 0], x[0, 0]) - arctan((r_bar - norm(x[0:2])) / 50)
+    θ_bar = -0.2 * arctan((z_bar - x[2, 0]) / 10)
     return θ_bar, ψ_bar
 
 
 x = array([[1, 0, 0, 0, 0, 0, 20, 0, 0, 0, 10, 0]]).T  # [x;y;z;φ;θ;ψ;v;w]
 dt = 0.01
-v_bar, z_bar, r_bar = 15, -50, 100
+v_bar, z_bar, r_bar = 10, -50, 100
 a = arange(0, 2 * pi, 0.1)
 Cx0, Cy0, Cz0 = r_bar * np.cos(a), r_bar * np.sin(a), [-z_bar] * len(a)  # circle to follow
 
@@ -89,10 +89,12 @@ fig = figure()
 ax = Axes3D(fig)
 clean3D(ax, -100, 100, -100, 100, 0, 70)
 
-for t in arange(0, 100, dt):
-    θ_bar, ψ_bar = planner(r_bar/10, z_bar)
+for t in arange(0, 300, dt):
+    θ_bar, ψ_bar = planner(r_bar / 10, z_bar)
     u = control(x, v_bar, θ_bar, ψ_bar)
     x = x + dt * f(x, u)
-    if t%0.1 == 0:
+    # draw_plane(x, u, ax)
+    # pause(0.0001)
+    if t % 1 == 0:
         draw_plane(x, u, ax)
-pause(10)
+pause(0)
