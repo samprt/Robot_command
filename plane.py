@@ -64,8 +64,7 @@ def f(x, u):
 
 def control(x, v_bar, θ_bar, ψ_bar):
     φ, θ, ψ, v = x[3, 0], x[4, 0], x[5, 0], norm(x[6:9])
-    φ_bar = 0.8 * arctan(5 * (arctan(0.5 * tan(ψ_bar - ψ))))  # Calcul du gîte désiré pour suivre
-    # pour suivre le bon cap
+    φ_bar = 0.8 * arctan(5 * (arctan(0.5 * tan(ψ_bar - ψ))))  # Calcul du gîte désiré pour suivre le bon cap
     u1 = 5 * (1 + 2 / pi * arctan((v_bar - v)))  # commande de la poussée
     u2 = -0.3 * (2 / pi * arctan(5 * (θ_bar - θ)) + abs(sin(φ)))  # commande de l'assiette
     u3 = -0.4 * (2 / pi) * arctan(φ_bar - φ)  # commande du gîte
