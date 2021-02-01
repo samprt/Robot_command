@@ -8,8 +8,8 @@ def h(x, y):
 
 def grad_h(x, y):
     d = 0.1
-    grad_h_x = (h(x + d, y) - h(x - d, y))/(2*d)
-    grad_h_y = (h(x, y + d) - h(x, y - d))/(2*d)
+    grad_h_x = (h(x + d, y) - h(x - d, y)) / (2 * d)
+    grad_h_y = (h(x, y + d) - h(x, y - d)) / (2 * d)
     return array([[grad_h_x, grad_h_y]]).T
 
 
@@ -25,8 +25,8 @@ def draw_mesh():
 def f(x, u):
     v = 5
     x, y, z, psi = x.flatten()
-    x_dot = v *cos(psi)
-    y_dot = v *sin(psi)
+    x_dot = v * cos(psi)
+    y_dot = v * sin(psi)
     v_dot = u[0]
     psi_dot = u[1]
     return array([[x_dot, y_dot, v_dot, psi_dot]]).T
@@ -44,7 +44,7 @@ def control(x, depth, altitude):
     psi = x[3, 0]
     y1, y2, y3 = g(x).flatten()
     u1 = 1 * (y3 - depth)
-    u2 = sawtooth(y2 + pi/2) + y2 * (altitude - y1)
+    u2 = sawtooth(y2 + pi / 2) + y2 * (altitude - y1)
     return array([u1, u2])
 
 

@@ -255,7 +255,7 @@ def draw_wheel3D(ax, x, y, z, φ, θ, ψ, r=1, col='blue', size=1):
 def draw_robot3D(ax, p, R, col='blue', size=1):
     M = tran3H(*p[0:3, 0]) @ diag([size, size, size, 1]) @ ToH(R) @ auv3H()
     draw3H(ax, M, col, True, 1)
-    pause(0.001)
+    # pause(0.001)
 
 
 def draw_auv3D(ax, x, y, z, φ, θ, ψ, col='blue', size=1):
