@@ -17,8 +17,6 @@ def f(x, u, escaper):
 
 
 def control(x, xa):
-    # x = x.flatten()
-    # xa = xa.flatten()
     dx = xa - x
     a1 = array([[cos(x[2, 0])],
                 [sin(x[2, 0])]])
