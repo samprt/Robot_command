@@ -117,7 +117,7 @@ def cart2latlong(x, y, z):
 
 
 def tran2H(x, y):
-    return array([[1, 0, x], [0, 1, y], [0, 0, 1]])
+    return array([[1, 0, x], [0, 1, y], [0, 0, 1]], dtype=object)
 
 
 def rot2H(a):
