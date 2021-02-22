@@ -18,6 +18,7 @@ from numpy.linalg import inv, det, norm, eig, qr
 from scipy.linalg import sqrtm, expm, logm, norm, block_diag
 
 from scipy.signal import place_poles
+from scipy.special import comb
 from mpl_toolkits.mplot3d import Axes3D
 from math import factorial
 from matplotlib.patches import Ellipse, Rectangle, Circle, Wedge, Polygon, Arc
